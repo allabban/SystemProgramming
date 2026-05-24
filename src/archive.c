@@ -34,7 +34,7 @@ int archive_files(char *input_files[], int file_count, const char *output_filena
         }
 
         if (!is_text_file(input_files[i])) {
-            printf("%s giriş dosyasının formatı uyumsuzdur!\n", input_files[i]);
+            printf("%s input file has an incompatible format!\n", input_files[i]);
             return 1;
         }
 
@@ -47,7 +47,7 @@ int archive_files(char *input_files[], int file_count, const char *output_filena
     }
 
     // STEP 2: METADATA
-    // ---------------------------------------------------------
+    // -----------------
     char metadata[8192] = ""; 
     char record[256];
     for (int i = 0; i < file_count; i++) {
@@ -59,9 +59,9 @@ int archive_files(char *input_files[], int file_count, const char *output_filena
     }
     int metadata_length = strlen(metadata);
 
-    // ---------------------------------------------------------
+    // -----------------------------------
     // STEP 3: WRITE TO ARCHIVE
-    // ---------------------------------------------------------
+    // ------------------------------------------
     FILE *out_file = fopen(output_filename, "w"); 
     if (!out_file) {
         printf("Error: Cannot create output archive '%s'.\n", output_filename);
@@ -72,10 +72,7 @@ int archive_files(char *input_files[], int file_count, const char *output_filena
     char header_size[11];
     snprintf(header_size, sizeof(header_size), "%-10d", metadata_length); 
     fwrite(header_size, 1, 10, out_file);
-
-    // Write the metadata string
     fwrite(metadata, 1, metadata_length, out_file);
-
     // Append the contents of each file
     for (int i = 0; i < file_count; i++) {
         FILE *in_file = fopen(input_files[i], "r");
@@ -84,7 +81,6 @@ int archive_files(char *input_files[], int file_count, const char *output_filena
             fclose(out_file);
             return 1;
         }
-
         char buffer[4096];
         size_t bytes_read;
         while ((bytes_read = fread(buffer, 1, sizeof(buffer), in_file)) > 0) {
@@ -92,11 +88,9 @@ int archive_files(char *input_files[], int file_count, const char *output_filena
         }
         fclose(in_file);
     }
-
     fclose(out_file);
     
-    // MANDATORY PROJECT STRING
-    printf("Dosyalar birleştirildi.\n");
+    printf("Files merged successfully.\n");
     
     return 0;
 }

@@ -14,15 +14,12 @@ int main(int argc, char *argv[]) {
         print_usage();
         return 1;
     }
-
-    // ---------------------------------------------------------
     // ARCHIVE MODE (-b)
-    // ---------------------------------------------------------
+    // ------------------------------
     if (strcmp(argv[1], "-b") == 0) {
         char *output_filename = "a.sau"; // Default archive name
         int input_files_count = 0;
         char *input_files[32]; // Maximum of 32 input files
-
         for (int i = 2; i < argc; i++) {
             if (strcmp(argv[i], "-o") == 0) {
                 // If -o is found, the next argument is the output filename
@@ -53,9 +50,11 @@ int main(int argc, char *argv[]) {
         // Call the archive logic
         archive_files(input_files, input_files_count, output_filename);
 
-    // ---------------------------------------------------------
+    // -------------------------------------------------------------------
+    // --------------------------------------------------------
+    // -----------------------------------------
     // EXTRACT MODE (-a)
-    // ---------------------------------------------------------
+    // -----------------
     } else if (strcmp(argv[1], "-a") == 0) {
         // -a parameter can take a maximum of 2 additional parameters
         if (argc > 4) { 
@@ -68,14 +67,10 @@ int main(int argc, char *argv[]) {
         // Validation: Check if the file has a .sau extension
         char *ext = strrchr(archive_filename, '.');
         if (!ext || strcmp(ext, ".sau") != 0) {
-            // MANDATORY PROJECT STRING
-            printf("Arşiv dosyası uygunsuz veya bozuk!\n");
+            printf("Arşiv dosyası uygunsuz veya bozuk! File contains invalid extension!\n");
             return 1;
         }
-
         char *target_directory = NULL;
-
-        // Second parameter (optional) is the target directory
         if (argc == 4) {
             target_directory = argv[3]; 
         }

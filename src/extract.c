@@ -14,14 +14,14 @@ int extract_archive(const char *archive_filename, const char *target_directory) 
     // ---------------------------------------------------------
     char header_size_str[11] = {0};
     if (fread(header_size_str, 1, 10, in_file) != 10) {
-        printf("Arşiv dosyası uygunsuz veya bozuk!\n");
+        printf("Archive file is corrupted!\n");
         fclose(in_file);
         return 1;
     }
 
     int metadata_length = atoi(header_size_str);
     if (metadata_length <= 0) {
-        printf("Arşiv dosyası uygunsuz veya bozuk!\n");
+        printf("Archive file is corrupted!\n");
         fclose(in_file);
         return 1;
     }
@@ -31,7 +31,7 @@ int extract_archive(const char *archive_filename, const char *target_directory) 
     // ---------------------------------------------------------
     char *metadata = malloc(metadata_length + 1);
     if (fread(metadata, 1, metadata_length, in_file) != (size_t)metadata_length) {
-        printf("Arşiv dosyası uygunsuz veya bozuk!\n");
+        printf("Archive file is corrupted!\n");
         free(metadata);
         fclose(in_file);
         return 1;
@@ -40,7 +40,7 @@ int extract_archive(const char *archive_filename, const char *target_directory) 
 
     // ---------------------------------------------------------
     // STEP 3: Handle the Target Directory
-    // ---------------------------------------------------------
+    // -----------------------------------
     char base_path[512] = "";
     if (target_directory != NULL) {
         struct stat st = {0};
@@ -53,16 +53,13 @@ int extract_archive(const char *archive_filename, const char *target_directory) 
                 return 1;
             }
         }
-        // Format the base path to ensure it ends with a slash (e.g., "d1/")
+        // Format the base path to ensure it ends with a slash ("d1/")
         snprintf(base_path, sizeof(base_path), "%s/", target_directory);
     }
-
     // ---------------------------------------------------------
     // STEP 4: Parse Metadata & Extract Files
-    // ---------------------------------------------------------
+    // --------------------------------------
     char *ptr = metadata;
-    int file_count = 0;
-
     // Loop through the metadata string looking for our '|' delimiters
     while (*ptr == '|') {
         ptr++; // Skip the initial '|'
@@ -70,13 +67,12 @@ int extract_archive(const char *archive_filename, const char *target_directory) 
         char filename[256] = {0};
         int permissions;
         long size;
-
-        // 4a. Extract Filename
+        //Extract Filename
         char *comma1 = strchr(ptr, ',');
         if (!comma1) break;
         strncpy(filename, ptr, comma1 - ptr);
         
-        // 4b. Extract Permissions (Read as Octal, e.g., 644)
+        //Extract Permissions
         ptr = comma1 + 1;
         char *comma2 = strchr(ptr, ',');
         if (!comma2) break;
@@ -113,19 +109,16 @@ int extract_archive(const char *archive_filename, const char *target_directory) 
 
         // 4e. Restore Original Permissions
         chmod(full_out_path, permissions);
-
-        file_count++;
         ptr = pipe + 1; // Move the pointer to the start of the next file record
     }
 
     free(metadata);
     fclose(in_file);
 
-    // Print success message mimicking the project requirements
     if (target_directory) {
-        printf("%s dizininde dosyalar açıldı.\n", target_directory);
+        printf("%s files extracted.\n", target_directory);
     } else {
-        printf("Mevcut dizinde dosyalar açıldı.\n");
+        printf("Files extracted to current directory.\n");
     }
 
     return 0;
